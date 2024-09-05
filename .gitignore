@@ -1,0 +1,7 @@
+build/
+tmp/
+testdata/
+vendor/
+assets/
+.env
+.vscode

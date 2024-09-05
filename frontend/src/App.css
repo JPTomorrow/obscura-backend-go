@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  #root {
+    @apply w-full h-screen flex items-center justify-center;
+  }
+
+  .black-bg {
+    @apply w-full h-full bg-black;
+  }
+
+  iframe {
+    @apply w-full h-full;
+  }
+
+  button {
+    @apply rounded-lg  font-semibold bg-gray-800 transition-transform hover:scale-105;
+  }
+}
