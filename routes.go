@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/JPTomorrow/obscura/config"
 	"github.com/JPTomorrow/obscura/db"
@@ -32,10 +33,22 @@ func initRoutes(e *echo.Echo) {
 	}))
 
 	yt := NewYoutubeService()
-	ytErr := yt.PullNewVideos(3)
-	if ytErr != nil {
-		log.Fatalf("Error pulling new videos: %v", ytErr)
+	yt.LoadDatabaseVideos()
+	err := yt.PullNewVideos(10)
+	if err != nil {
+		log.Println("Error pulling new videos -> ", err)
 	}
+	log.Println("Pulling new videos -> count: ", len(yt.videoPool.videos))
+
+	go func() {
+		for range time.Tick(time.Second * 1800) {
+			err := yt.PullNewVideos(10)
+			if err != nil {
+				log.Println("Error pulling new videos -> ", err)
+			}
+			log.Println("Pulling new videos -> count: ", len(yt.videoPool.videos))
+		}
+	}()
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

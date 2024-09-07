@@ -3,7 +3,14 @@
 @tailwind utilities;
 
 @layer components {
+  @font-face {
+    font-family: "Carnival";
+    src: local("Carnival"),
+      url(fonts/Carnevalee Freakshow.ttf) format("opentype");
+  }
+
   #root {
+    font-family: "Carnival", sans-serif;
     @apply w-full h-screen flex items-center justify-center;
   }
 
@@ -16,6 +23,10 @@
   }
 
   button {
-    @apply rounded-lg  font-semibold bg-gray-800 transition-transform hover:scale-105;
+    @apply !p-0 !m-0;
+  }
+
+  .btn-base {
+    @apply !px-5 py-3 rounded-lg font-semibold bg-gray-800 transition-transform hover:scale-105;
   }
 }
