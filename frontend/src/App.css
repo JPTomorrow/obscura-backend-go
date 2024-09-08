@@ -9,8 +9,11 @@
       url(fonts/Carnevalee Freakshow.ttf) format("opentype");
   }
 
-  #root {
+  .carnival-font {
     font-family: "Carnival", sans-serif;
+  }
+
+  #root {
     @apply w-full h-screen flex items-center justify-center;
   }
 

@@ -25,7 +25,6 @@ type YoutubeContext struct {
 
 func initRoutes(e *echo.Echo) {
 	// middleware
-	// e.Use(middleware.CORS())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 
 		AllowOrigins: []string{"*"},
@@ -33,16 +32,17 @@ func initRoutes(e *echo.Echo) {
 	}))
 
 	yt := NewYoutubeService()
+	videosPerInteval := 5
 	yt.LoadDatabaseVideos()
-	err := yt.PullNewVideos(10)
+	err := yt.PullNewVideos(int64(videosPerInteval))
 	if err != nil {
 		log.Println("Error pulling new videos -> ", err)
 	}
 	log.Println("Pulling new videos -> count: ", len(yt.videoPool.videos))
 
 	go func() {
-		for range time.Tick(time.Second * 1800) {
-			err := yt.PullNewVideos(10)
+		for range time.Tick(time.Hour * 8) { // run every 8 hours
+			err := yt.PullNewVideos(int64(videosPerInteval))
 			if err != nil {
 				log.Println("Error pulling new videos -> ", err)
 			}

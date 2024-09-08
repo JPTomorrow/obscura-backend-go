@@ -37,7 +37,8 @@ func NewYoutubeService() *YTService {
 }
 
 func (yt *YTService) LoadDatabaseVideos() {
-	rows, err := db.Query(db.YoutubeVideo{}, "title", "description", "video_tag", "upvotes", "downvotes")
+	rows, err := db.Query(db.YoutubeVideo{})
+
 	if err != nil {
 		log.Println("Error loading videos from database -> ", err)
 		return
@@ -46,7 +47,7 @@ func (yt *YTService) LoadDatabaseVideos() {
 	videos := []*db.YoutubeVideo{}
 	for rows.Next() {
 		c := db.YoutubeVideo{}
-		err := rows.Scan(&c)
+		err := rows.Scan(&c.Id, &c.Title, &c.Description, &c.VideoTag, &c.Upvotes, &c.Downvotes)
 		if err != nil {
 			log.Fatalln("failed to unmarshal video row to json -> ", err)
 		}
@@ -114,12 +115,12 @@ func (yt *YTService) PullNewVideos(limit int64) error {
 			continue
 		}
 
-		newVid := &db.YoutubeVideo{
+		newVid := db.YoutubeVideo{
 			Title:       item.Snippet.Title,
 			Description: item.Snippet.Description,
 			VideoTag:    item.Id.VideoId,
 		}
-		yt.videoPool.videos = append(yt.videoPool.videos, newVid)
+		yt.videoPool.videos = append(yt.videoPool.videos, &newVid)
 		// @TODO: add to database
 		db.Insert(newVid)
 	}

@@ -164,21 +164,37 @@ func Update() {
 	panic("SQL ORM Update not implemented")
 }
 
-func Query(entry interface{}, values ...string) (*sql.Rows, error) {
+// query the table for entry with the given values provided in the inteface
+func Query(entry interface{}) (*sql.Rows, error) {
+	r := reflect.ValueOf(entry)
+	t := reflect.TypeOf(entry)
+	cnt := t.NumField()
 	table_name := sqlTableNameString(entry)
-	query := strings.Builder{}
-	query.WriteString("SELECT * FROM " + table_name + " WHERE ")
-	for i, val := range values {
-		first_letter := string(val[0])
-		rest := val[1:]
-		final := strings.ToUpper(first_letter) + rest
-		query.WriteString(table_name + "." + val + " = " + fmt.Sprintf("%+v", reflect.ValueOf(entry).FieldByName(final)))
-		if i < len(values)-1 {
-			query.WriteString(" AND ")
+	fields := strings.Builder{}
+
+	for i := range cnt {
+		val := r.Field(i).String()
+		if r.Field(i).IsZero() || val == "" {
+			continue
+		}
+
+		// first_letter := val[0]
+		// rest := val[1:]
+		// final := strings.ToUpper(string(first_letter)) + rest
+		fields.WriteString(table_name + "." + r.Type().Field(i).Name + " = " + val)
+		if i < cnt-1 {
+			fields.WriteString(" AND ")
 		}
 	}
-	fmt.Printf("\nQuery: %s\n\n\n", query.String())
-	return dbInstance.Query(query.String())
+
+	query := "SELECT * FROM " + table_name
+	if fields.Len() > 0 {
+		query += " WHERE "
+	}
+	final := query + fields.String()
+
+	fmt.Printf("\nQuery: %s\n\n\n", final)
+	return dbInstance.Query(final)
 }
 
 func Exec(s string, args ...any) (sql.Result, error) {
