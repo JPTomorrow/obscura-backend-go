@@ -54,7 +54,7 @@ func main() {
 	initRoutes(e)
 
 	go func() {
-		e.Logger.Fatal(e.Start("localhost:" + os.Getenv("PORT")))
+		e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 
 	}()
 
