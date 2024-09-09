@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,6 +32,8 @@ func initRoutes(e *echo.Echo) {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
+	// init youtube service
+	// this includes a running goroutine that pulls new videos every 8 hours
 	yt := NewYoutubeService()
 	videosPerInteval := 5
 	yt.LoadDatabaseVideos()
@@ -64,6 +67,8 @@ func initRoutes(e *echo.Echo) {
 
 	// backend routes
 	e.GET("/next-vid", FeedNextVideo)
+	e.POST("/upvote", UpvoteVideo)
+	e.POST("/downvote", DownvoteVideo)
 
 	// debug only routes
 	if config.DEBUG {
@@ -81,6 +86,42 @@ func FeedNextVideo(c echo.Context) error {
 	return c.JSON(http.StatusOK, vid)
 }
 
+func UpvoteVideo(c echo.Context) error {
+	ac := c.(*YoutubeContext)
+	bd := bodyAsJSON(c)
+	videoId, idOk := bd["videoId"].(string)
+	if !idOk {
+		return c.String(http.StatusBadRequest, "videoId is not valid. must be a string.")
+	}
+
+	err := ac.yt.VoteVideo(videoId, true)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	return c.String(http.StatusOK, "successfully upvoted video")
+}
+func DownvoteVideo(c echo.Context) error {
+	ac := c.(*YoutubeContext)
+	bd := bodyAsJSON(c)
+	videoId, idOk := bd["videoId"].(string)
+	if !idOk {
+		return c.String(http.StatusBadRequest, "videoId is not valid. must be a string.")
+	}
+
+	err := ac.yt.VoteVideo(videoId, false)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	return c.String(http.StatusOK, "successfully upvoted video")
+}
+
+/*
+	UTILITY FUNCTIONS
+*/
+
+// update the database with the tables defined by the structs provided to db.SchemaString
 func updateDbSchema(c echo.Context) error {
 	schema, err := db.SchemaString(db.YoutubeVideo{})
 	for _, table := range schema {
@@ -99,4 +140,17 @@ func updateDbSchema(c echo.Context) error {
 	msg := strings.Join(schema, "\n\n") + "\nTables created successfully!!!\n\n"
 	fmt.Println(msg)
 	return c.String(http.StatusOK, msg)
+}
+
+func bodyAsJSON(c echo.Context) map[string]interface{} {
+
+	jsonBody := make(map[string]interface{})
+	err := json.NewDecoder(c.Request().Body).Decode(&jsonBody)
+	if err != nil {
+
+		log.Fatalln("empty json body")
+		return nil
+	}
+
+	return jsonBody
 }

@@ -160,8 +160,39 @@ func Remove(s interface{}) (sql.Result, error) {
 	return dbInstance.Exec(query)
 }
 
-func Update() {
-	panic("SQL ORM Update not implemented")
+func Update(entry interface{}, whereKey string) (sql.Result, error) {
+	if len(whereKey) == 0 {
+		return nil, fmt.Errorf("no where keys provided")
+	}
+
+	r := reflect.ValueOf(entry)
+	t := reflect.TypeOf(entry)
+	cnt := t.NumField()
+	table_name := sqlTableNameString(entry)
+	query := strings.Builder{}
+	query.WriteString("UPDATE " + table_name + " SET ")
+
+	fields := []string{}
+	for i := range cnt {
+		tag := r.Type().Field(i).Tag.Get("sql_name")
+		val, err := sqlFieldValue(entry, tag)
+		if r.Field(i).IsZero() || val == "" || err != nil {
+			continue
+		}
+
+		fields = append(fields, tag+" = "+val)
+	}
+	query.WriteString(strings.Join(fields, ", "))
+
+	query.WriteString(" WHERE ")
+	val, err := sqlFieldValue(entry, whereKey)
+	if err != nil {
+		return nil, err
+	}
+	query.WriteString(whereKey + " = " + val)
+
+	fmt.Printf("\nUpdate: %s\n\n\n", query.String())
+	return dbInstance.Exec(query.String())
 }
 
 // query the table for entry with the given values provided in the inteface
@@ -178,9 +209,6 @@ func Query(entry interface{}) (*sql.Rows, error) {
 			continue
 		}
 
-		// first_letter := val[0]
-		// rest := val[1:]
-		// final := strings.ToUpper(string(first_letter)) + rest
 		fields.WriteString(table_name + "." + r.Type().Field(i).Name + " = " + val)
 		if i < cnt-1 {
 			fields.WriteString(" AND ")

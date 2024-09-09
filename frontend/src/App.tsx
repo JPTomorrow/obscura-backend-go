@@ -82,8 +82,19 @@ function App() {
       "https://www.youtube.com/watch?v=" + vid.video_tag
     );
   };
-  const handleThumbsUp = () => {};
-  const handleThumbsDown = () => {};
+
+  const handleVote = async (up: boolean) => {
+    await fetch(
+      `http://${location.hostname}:8080/${up ? "upvote" : "downvote"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ videoId: vid.video_tag }),
+      }
+    );
+  };
 
   const opts = {
     playerVars: {
@@ -123,10 +134,16 @@ function App() {
             >
               <IconCopy size={28} className="text-white" />
             </button>
-            <button onClick={handleThumbsUp} className="btn-base bg-green-700">
+            <button
+              onClick={() => handleVote(true)}
+              className="btn-base bg-green-700"
+            >
               <IconThumbUp size={28} className="text-white bg-green-700" />
             </button>
-            <button onClick={handleThumbsDown} className="btn-base bg-red-800 ">
+            <button
+              onClick={() => handleVote(false)}
+              className="btn-base bg-red-800 "
+            >
               <IconThumbDown size={28} className="text-white" />
             </button>
             <button

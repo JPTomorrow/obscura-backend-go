@@ -141,3 +141,41 @@ func (yt *YTService) PitchRandomVideo() (*db.YoutubeVideo, error) {
 	rng := rand.Intn(len(yt.videoPool.videos)-0) + 0
 	return yt.videoPool.videos[rng], nil
 }
+
+func (yt *YTService) FindVideoById(videoId string) (*db.YoutubeVideo, bool) {
+	for _, vid := range yt.videoPool.videos {
+		if vid.VideoTag == videoId {
+			return vid, true
+		}
+	}
+	return nil, false
+}
+
+func (yt *YTService) VoteVideo(videoId string, up bool) error {
+	vid, ok := yt.FindVideoById(videoId)
+	if !ok {
+		return fmt.Errorf("vote video -> video not found")
+	}
+
+	// update upvote column in database
+	if up {
+		_, err := db.Update(db.YoutubeVideo{
+			VideoTag: vid.VideoTag,
+			Upvotes:  vid.Upvotes + 1,
+		}, "video_tag")
+		if err != nil {
+			return err
+		}
+		vid.Upvotes += 1
+	} else {
+		_, err := db.Update(db.YoutubeVideo{
+			VideoTag:  vid.VideoTag,
+			Downvotes: vid.Downvotes + 1,
+		}, "video_tag")
+		if err != nil {
+			return err
+		}
+		vid.Downvotes += 1
+	}
+	return nil
+}
