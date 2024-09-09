@@ -30,6 +30,6 @@
   }
 
   .btn-base {
-    @apply !px-5 py-3 rounded-lg font-semibold bg-gray-800 transition-transform hover:scale-105;
+    @apply !px-5 py-3 rounded-lg font-semibold bg-gray-800 transition-transform hover:scale-105 disabled:!opacity-50;
   }
 }

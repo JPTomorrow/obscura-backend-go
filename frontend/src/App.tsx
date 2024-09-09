@@ -34,7 +34,8 @@ function App() {
   });
   const [isTopBarShowing, setIsTopBarShowing] = useState(true);
   const [isShowingAboutPanel, setIsShowingAboutPanel] = useState(false);
-  const [cookies, setCookie] = useCookies(["name"]);
+  const [cookies, setCookie] = useCookies(["has_voted"]);
+  const [disableVoteButtons, setDisableVoteButtons] = useState(false);
 
   let topBarInterval: number;
   const hideTopBar = (delay: boolean = true) => {
@@ -55,12 +56,19 @@ function App() {
     let resp = await fetch("http://localhost:8080/next-vid");
     let data = await resp.json();
     setVid(data);
+    resetVote();
   };
 
   useEffect(() => {
     nextVideo();
     hideTopBar();
   }, []);
+
+  useEffect(() => {
+    cookies.has_voted
+      ? setDisableVoteButtons(true)
+      : setDisableVoteButtons(false);
+  }, [cookies.has_voted]);
 
   useEffect(() => {
     console.log(vid);
@@ -83,6 +91,14 @@ function App() {
     );
   };
 
+  const setVote = () => {
+    setCookie("has_voted", "true", { path: "/" });
+  };
+
+  const resetVote = () => {
+    setCookie("has_voted", "false", { path: "/" });
+  };
+
   const handleVote = async (up: boolean) => {
     await fetch(
       `http://${location.hostname}:8080/${up ? "upvote" : "downvote"}`,
@@ -94,6 +110,7 @@ function App() {
         body: JSON.stringify({ videoId: vid.video_tag }),
       }
     );
+    setVote();
   };
 
   const opts = {
@@ -136,12 +153,14 @@ function App() {
             </button>
             <button
               onClick={() => handleVote(true)}
+              disabled={disableVoteButtons}
               className="btn-base bg-green-700"
             >
               <IconThumbUp size={28} className="text-white bg-green-700" />
             </button>
             <button
               onClick={() => handleVote(false)}
+              disabled={disableVoteButtons}
               className="btn-base bg-red-800 "
             >
               <IconThumbDown size={28} className="text-white" />
