@@ -53,7 +53,7 @@ function App() {
   };
 
   const nextVideo = async () => {
-    let resp = await fetch("http://localhost:8080/next-vid");
+    let resp = await fetch(`http://${location.hostname}:8080/next-vid`);
     let data = await resp.json();
     setVid(data);
     resetVote();
@@ -120,7 +120,7 @@ function App() {
       mute: 1,
       rel: 0,
       controls: 1,
-      origin: "http://localhost:5173",
+      origin: `http://${location.hostname}:5173`,
     },
   };
   return (
