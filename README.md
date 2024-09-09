@@ -1,4 +1,4 @@
-# Obscura - Browsing the Youtube Backwoods 
+# Obscura - Browsing the Youtube Backwoods - Backend API
 
 ## FEATURES
 - uses the youtube API to search for scary videos!
@@ -9,7 +9,6 @@
 
 ## TECH STACK 
 - Golang
-- React.js
 - Railway.app
 - Air (Hot Reload Library)
 - Echo (HTTP Framework)
@@ -18,4 +17,3 @@
 
 
 ## For Production
-test
