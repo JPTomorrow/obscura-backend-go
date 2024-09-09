@@ -32,6 +32,14 @@ func main() {
 
 	if config.DEBUG {
 		fmt.Println("App is in DEBUG mode")
+
+		err := godotenv.Load()
+		if err != nil {
+			e.Logger.Fatal("Error loading .env file")
+		} else {
+			e.Logger.Info("Loaded .env file successfully")
+		}
+
 	} else {
 		fmt.Println("App is in PRODUCTION mode")
 	}
@@ -39,13 +47,6 @@ func main() {
 	cdw, _ := os.Getwd()
 	fmt.Println("EXEC PATH: " + cdw + "/" + os.Args[0])
 	// dir_tree.Print()
-
-	err := godotenv.Load()
-	if err != nil {
-		e.Logger.Fatal("Error loading .env file")
-	} else {
-		e.Logger.Info("Loaded .env file successfully")
-	}
 
 	db.InitDb()
 	defer db.CloseDB()
